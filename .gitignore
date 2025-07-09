@@ -17,10 +17,11 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 
 # =============== Application Configuration ===============
+*.pem
 .env
 src/main/resources/*
-!src/main/resources/application.yml
-!src/main/resources/application-test.yml
+src/main/resources/application-test.yml
+src/main/resources/application.yml
 
 # =============== IDEs ===============
 
