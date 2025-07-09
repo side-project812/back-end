@@ -56,3 +56,4 @@ HELP.md
 
 # =============== Mobile Tools for Java ===============
 .mtj.tmp/
+src/main/resources/application.yml
