@@ -44,6 +44,8 @@ dependencies {
 	// swagger
 	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.2.0'
 
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	runtimeOnly 'com.h2database:h2'
 	compileOnly 'org.projectlombok:lombok'

@@ -43,4 +43,9 @@ public class CustomResponse<T> {
     public static <T> CustomResponse<T> onFailure(String code, String message) {
         return new CustomResponse<>(false, code, message, null);
     }
+
+    // message를 직접 지정할 수 있는 onSuccess 오버로딩 추가
+    public static <T> CustomResponse<T> onSuccess(T result, String message) {
+        return new CustomResponse<>(true, String.valueOf(HttpStatus.OK.value()), message, result);
+    }
 }
