@@ -7,6 +7,7 @@ import com.qeat.domain.user.dto.response.LoginResponse;
 import com.qeat.domain.user.dto.response.OAuthResponse;
 import com.qeat.domain.user.dto.response.SignupResponse;
 import com.qeat.domain.user.service.LoginService;
+import com.qeat.domain.user.service.LogoutService;
 import com.qeat.domain.user.service.OAuthService;
 import com.qeat.domain.user.service.SignupService;
 import com.qeat.global.apiPayload.CustomResponse;
@@ -14,10 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,6 +26,7 @@ public class AuthController {
     private final SignupService signupService;
     private final OAuthService oAuthService;
     private final LoginService loginService;
+    private final LogoutService logoutService;
 
     @PostMapping("/signup")
     @Operation(summary = "이메일 회원가입 API", description = "이메일 회원가입 요청 처리")
@@ -48,5 +47,13 @@ public class AuthController {
     public ResponseEntity<CustomResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
         LoginResponse response = loginService.login(request);
         return ResponseEntity.ok(CustomResponse.onSuccess(response));
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃 API", description = "로그아웃 요청 처리")
+    public ResponseEntity<CustomResponse<Void>> logout(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        logoutService.logout(token);
+        return ResponseEntity.ok(CustomResponse.<Void>onSuccess(null, "로그아웃 되었습니다."));
     }
 }
