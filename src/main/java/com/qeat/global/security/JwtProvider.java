@@ -16,10 +16,10 @@ public class JwtProvider {
     private String secret;
 
     @Value("${jwt.expiration}")
-    private long expiration; // milliseconds
+    private long accessTokenExpiration;
 
     @Value("${jwt.refresh-expiration}")
-    private long refreshExpiration;
+    private long refreshTokenExpiration;
 
     @PostConstruct
     protected void init() {
@@ -28,7 +28,7 @@ public class JwtProvider {
 
     public String createToken(Long userId) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + expiration);
+        Date expiry = new Date(now.getTime() + accessTokenExpiration);
 
         return Jwts.builder()
                 .setSubject(userId.toString())
@@ -40,7 +40,7 @@ public class JwtProvider {
 
     public String createRefreshToken(Long userId) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + refreshExpiration); // 따로 설정해도 되고 고정값 가능
+        Date expiry = new Date(now.getTime() + refreshTokenExpiration); // 따로 설정해도 되고 고정값 가능
         return Jwts.builder()
                 .setSubject(userId.toString())
                 .setIssuedAt(now)
@@ -49,7 +49,19 @@ public class JwtProvider {
                 .compact();
     }
 
+    public Long extractUserId(String token) {
+        return Long.parseLong(Jwts.parser()
+                .setSigningKey(secret)
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject());
+    }
+
     public long getAccessTokenExpiry() {
-        return expiration / 1000; // ms → 초
+        return accessTokenExpiration / 1000; // 초 단위
+    }
+
+    public long getRefreshTokenExpiry() {
+        return refreshTokenExpiration; // 밀리초 그대로 사용
     }
 }
