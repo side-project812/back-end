@@ -26,4 +26,5 @@ public class User {
 
     private String provider;    // ex) "LOCAL", "GOOGLE", "APPLE"
     private String providerId;  // 소셜 로그인 식별자 (LOCAL은 null 가능)
+    private String avatar;
 }
