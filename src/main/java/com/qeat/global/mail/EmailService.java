@@ -46,7 +46,7 @@ public class EmailService {
     // 6자리 랜덤 숫자 생성
     private String generateCode() {
         Random random = new Random();
-        int code = 100_000 + random.nextInt(900_000); // 100000 ~ 999999
+        int code = 1000 + random.nextInt(9000); // 1000 ~ 9999
         return String.valueOf(code);
     }
 }
