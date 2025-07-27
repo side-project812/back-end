@@ -19,7 +19,7 @@ public class User {
     @Column(name = "name")
     private String name;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
     @Column(nullable = false)
@@ -44,5 +44,10 @@ public class User {
     // 닉네임 변경 메소드
     public void changeName(String newName) {
         this.name = newName;
+    }
+
+    // 이메일 변경 메소드
+    public void changeEmail(String newEmail) {
+        this.email = newEmail;
     }
 }

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import com.qeat.domain.user.dto.request.ChangeEmailRequest;
 
 @RestController
 @RequestMapping("/api/user/profile")
@@ -31,6 +33,23 @@ public class UserProfileController {
 
         return ResponseEntity.ok(
                 CustomResponse.<Void>onSuccess(null, "닉네임이 변경되었습니다.")
+        );
+    }
+
+    @PatchMapping("/email")
+    @Operation(
+            summary = "이메일 주소 변경 API",
+            description = "사용자의 이메일 주소를 변경합니다.",
+            security = @SecurityRequirement(name = "JWT")
+    )
+    public ResponseEntity<CustomResponse<Void>> changeEmail(
+            @RequestBody ChangeEmailRequest request
+    ) {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        userProfileService.changeEmail(userId, request.newEmail());
+
+        return ResponseEntity.ok(
+                CustomResponse.<Void>onSuccess(null, "이메일 주소가 변경되었습니다.")
         );
     }
 }

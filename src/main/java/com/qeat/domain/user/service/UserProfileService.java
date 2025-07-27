@@ -20,4 +20,16 @@ public class UserProfileService {
         user.changeName(newName);
         loginRepository.save(user);
     }
+
+    public void changeEmail(Long userId, String newEmail) {
+        if (loginRepository.findByEmail(newEmail).isPresent()) {
+            throw new UserException(UserErrorCode.DUPLICATE_EMAIL);
+        }
+
+        User user = loginRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        user.changeEmail(newEmail);
+        loginRepository.save(user);
+    }
 }
