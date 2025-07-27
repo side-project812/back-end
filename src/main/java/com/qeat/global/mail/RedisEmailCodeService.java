@@ -26,6 +26,10 @@ public class RedisEmailCodeService {
         return redisTemplate.opsForValue().get(PREFIX + email);
     }
 
+    public String getPaymentCode(String email) {
+        return redisTemplate.opsForValue().get("reset:payment:" + email);
+    }
+
     public void deleteCode(String email) {
 
         redisTemplate.delete(PREFIX + email);
