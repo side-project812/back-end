@@ -16,6 +16,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "name")
     private String name;
 
     @Column(unique = true, nullable = false)
@@ -35,8 +36,13 @@ public class User {
     @Column(name = "payment_password")
     private String paymentPassword;
 
-    // 결제 비밀번호 수정 메서드
+    // 결제 비밀번호 수정 메소드
     public void changePaymentPassword(String newPassword) {
         this.paymentPassword = newPassword;
+    }
+
+    // 닉네임 변경 메소드
+    public void changeName(String newName) {
+        this.name = newName;
     }
 }
