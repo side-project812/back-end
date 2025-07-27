@@ -17,11 +17,17 @@ public class RedisEmailCodeService {
         redisTemplate.opsForValue().set(PREFIX + email, code, ttlSeconds, TimeUnit.SECONDS);
     }
 
+    public void savePaymentCode(String email, String code, long ttlSeconds) {
+        redisTemplate.opsForValue().set("reset:payment:" + email, code, ttlSeconds, TimeUnit.SECONDS);
+    }
+
     public String getCode(String email) {
+
         return redisTemplate.opsForValue().get(PREFIX + email);
     }
 
     public void deleteCode(String email) {
+
         redisTemplate.delete(PREFIX + email);
     }
 }
