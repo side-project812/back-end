@@ -1,8 +1,10 @@
 package com.qeat.domain.user.controller;
 
+import com.qeat.domain.user.dto.request.PaymentPasswordChangeRequest;
 import com.qeat.domain.user.dto.request.PaymentPasswordResetRequest;
 import com.qeat.domain.user.dto.request.PaymentPasswordVerifyRequest;
 import com.qeat.domain.user.dto.response.CodeSendResponse;
+import com.qeat.domain.user.service.PaymentPasswordResetService;
 import com.qeat.global.apiPayload.CustomResponse;
 import com.qeat.global.mail.EmailService;
 import com.qeat.global.mail.RedisEmailCodeService;
@@ -10,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,8 +20,10 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "결제 비밀번호 재설정")
 @RequiredArgsConstructor
 public class PaymentPasswordResetController {
+
     private final EmailService emailService;
     private final RedisEmailCodeService redisEmailCodeService;
+    private final PaymentPasswordResetService paymentPasswordResetService;
 
     private static final long EXPIRE_SECONDS = 240;
 
@@ -62,6 +67,20 @@ public class PaymentPasswordResetController {
         // 인증 성공 → 필요시 Redis에서 코드 삭제 가능
         return ResponseEntity.ok(
                 CustomResponse.<Void>onSuccess(null, "인증 코드가 유효합니다.")
+        );
+    }
+
+    @PostMapping("/change")
+    @Operation(summary = "결제 비밀번호 재설정 API", description = "결제 비밀번호 재설정 요청 처리")
+    public ResponseEntity<CustomResponse<Void>> changePaymentPassword(
+            @RequestBody PaymentPasswordChangeRequest request) {
+
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        paymentPasswordResetService.changePaymentPassword(userId, request.paymentPassword());
+
+        return ResponseEntity.ok(
+                CustomResponse.<Void>onSuccess(null, "결제 비밀번호가 변경되었습니다.")
         );
     }
 }

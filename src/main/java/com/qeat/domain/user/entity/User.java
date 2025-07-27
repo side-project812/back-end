@@ -31,4 +31,12 @@ public class User {
     public void changePassword(String newPassword) {
         this.password = newPassword;
     }
+
+    @Column(name = "payment_password")
+    private String paymentPassword;
+
+    // 결제 비밀번호 수정 메서드
+    public void changePaymentPassword(String newPassword) {
+        this.paymentPassword = newPassword;
+    }
 }
