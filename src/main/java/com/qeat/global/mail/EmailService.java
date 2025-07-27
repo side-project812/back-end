@@ -43,7 +43,28 @@ public class EmailService {
         return code;
     }
 
-    // 6자리 랜덤 숫자 생성
+    public String sendPaymentPasswordResetCode(String toEmail) {
+        String code = generateCode(); // 4자리
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("[Qeat] 결제 비밀번호 재설정 인증번호");
+            helper.setText(
+                    "<h3>Qeat 결제 비밀번호 재설정</h3><p>인증번호: <strong>" + code + "</strong></p><p>유효시간: 4분</p>",
+                    true
+            );
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("이메일 전송에 실패했습니다.", e);
+        }
+
+        return code;
+    }
+
+    // 4자리 랜덤 숫자 생성
     private String generateCode() {
         Random random = new Random();
         int code = 1000 + random.nextInt(9000); // 1000 ~ 9999

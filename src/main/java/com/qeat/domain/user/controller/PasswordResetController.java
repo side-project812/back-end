@@ -1,8 +1,10 @@
 package com.qeat.domain.user.controller;
 
+import com.qeat.domain.user.dto.request.PasswordResetChangeRequest;
 import com.qeat.domain.user.dto.request.PasswordResetRequest;
 import com.qeat.domain.user.dto.request.PasswordResetVerifyRequest;
 import com.qeat.domain.user.dto.response.PasswordResetResponse;
+import com.qeat.domain.user.service.PasswordResetService;
 import com.qeat.global.apiPayload.CustomResponse;
 import com.qeat.global.mail.EmailService;
 import com.qeat.global.mail.RedisEmailCodeService;
@@ -23,6 +25,7 @@ public class PasswordResetController {
 
     private final EmailService emailService;
     private final RedisEmailCodeService redisEmailCodeService;
+    private final PasswordResetService passwordResetService;
 
     private static final long EXPIRE_SECONDS = 240;
 
@@ -65,5 +68,17 @@ public class PasswordResetController {
 
         // 인증 성공 시
         return ResponseEntity.ok(CustomResponse.<Void>onSuccess(null, "인증 코드가 유효합니다."));
+    }
+
+    @PostMapping("/change")
+    @Operation(summary = "비밀번호 재설정 API", description = "비밀번호 재설정 요청 처리")
+    public ResponseEntity<CustomResponse<Void>> changePassword(
+            @RequestBody PasswordResetChangeRequest request) {
+
+        passwordResetService.changePassword(request.email(), request.password());
+
+        return ResponseEntity.ok(
+                CustomResponse.<Void>onSuccess(null, "비밀번호가 변경되었습니다.")
+        );
     }
 }
