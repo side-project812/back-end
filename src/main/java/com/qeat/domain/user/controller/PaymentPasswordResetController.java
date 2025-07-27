@@ -1,6 +1,7 @@
 package com.qeat.domain.user.controller;
 
 import com.qeat.domain.user.dto.request.PaymentPasswordResetRequest;
+import com.qeat.domain.user.dto.request.PaymentPasswordVerifyRequest;
 import com.qeat.domain.user.dto.response.CodeSendResponse;
 import com.qeat.global.apiPayload.CustomResponse;
 import com.qeat.global.mail.EmailService;
@@ -35,6 +36,32 @@ public class PaymentPasswordResetController {
                         CodeSendResponse.builder().expiresIn(EXPIRE_SECONDS).build(),
                         "인증 코드가 전송되었습니다."
                 )
+        );
+    }
+
+    @PostMapping("/verify")
+    @Operation(summary = "결제 비밀번호 코드 인증 API", description = "결제 비밀번호 코드 인증 요청 처리")
+    public ResponseEntity<CustomResponse<Void>> verifyPaymentPasswordCode(
+            @RequestBody PaymentPasswordVerifyRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String storedCode = redisEmailCodeService.getPaymentCode(request.email());
+
+        if (storedCode == null) {
+            return ResponseEntity.badRequest().body(
+                    CustomResponse.onFailure("400", "인증 코드가 만료되었거나 존재하지 않습니다.")
+            );
+        }
+
+        if (!storedCode.equals(request.verificationCode())) {
+            return ResponseEntity.status(401).body(
+                    CustomResponse.onFailure("401", "인증 코드가 일치하지 않습니다.")
+            );
+        }
+
+        // 인증 성공 → 필요시 Redis에서 코드 삭제 가능
+        return ResponseEntity.ok(
+                CustomResponse.<Void>onSuccess(null, "인증 코드가 유효합니다.")
         );
     }
 }
