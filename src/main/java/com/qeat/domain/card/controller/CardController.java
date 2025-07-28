@@ -37,4 +37,12 @@ public class CardController {
         List<CardListResponse> cards = cardService.getCardList();
         return ResponseEntity.ok(CustomResponse.onSuccess(cards, "등록된 카드 목록입니다."));
     }
+
+    @DeleteMapping("/{cardId}")
+    @Operation(summary = "카드 삭제 API", description = "카드 삭제 요청 처리")
+    public ResponseEntity<CustomResponse<Void>> deleteCard(
+            @PathVariable Long cardId) {
+        cardService.deleteCard(cardId); // userId는 내부에서 추출
+        return ResponseEntity.ok(CustomResponse.<Void>onSuccess(null, "카드가 삭제되었습니다."));
+    }
 }
