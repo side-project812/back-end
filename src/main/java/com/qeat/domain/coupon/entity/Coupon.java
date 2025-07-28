@@ -12,16 +12,19 @@ import java.time.LocalDate;
 @Builder
 public class Coupon {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
-    private String couponCode;
+    private Integer discountAmount;
 
-    private int discountAmount;
+    private Integer minOrderAmount;
 
     private LocalDate validFrom;
 
     private LocalDate validTo;
+
+    private String couponCode;
 }
