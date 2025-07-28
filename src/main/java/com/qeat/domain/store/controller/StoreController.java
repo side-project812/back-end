@@ -1,5 +1,6 @@
 package com.qeat.domain.store.controller;
 
+import com.qeat.domain.store.dto.response.StoreBookmarkListResponse;
 import com.qeat.domain.store.dto.response.StoreDetailResponse;
 import com.qeat.domain.store.service.StoreBookmarkService;
 import com.qeat.domain.store.service.StoreService;
@@ -9,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,5 +41,12 @@ public class StoreController {
     public ResponseEntity<CustomResponse<Void>> unbookmarkStore(@PathVariable Long storeId) {
         storeBookmarkService.unbookmarkStore(storeId);
         return ResponseEntity.ok(CustomResponse.<Void>onSuccess(null, "OK"));
+    }
+
+    @GetMapping("/bookmark")
+    @Operation(summary = "저장한 가게 리스트 조회 API", description = "북마크한 가게 목록을 반환합니다.")
+    public ResponseEntity<CustomResponse<List<StoreBookmarkListResponse>>> getBookmarkedStores() {
+        List<StoreBookmarkListResponse> result = storeBookmarkService.getBookmarkedStores();
+        return ResponseEntity.ok(CustomResponse.onSuccess(result, "OK"));
     }
 }
