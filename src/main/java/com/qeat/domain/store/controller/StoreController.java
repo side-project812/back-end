@@ -32,4 +32,11 @@ public class StoreController {
         storeBookmarkService.bookmarkStore(storeId);
         return ResponseEntity.ok(CustomResponse.<Void>onSuccess(null, "OK"));
     }
+
+    @DeleteMapping("/{storeId}/bookmark")
+    @Operation(summary = "가게 저장 해제 API", description = "사용자가 특정 가게의 저장을 해제합니다.")
+    public ResponseEntity<CustomResponse<Void>> unbookmarkStore(@PathVariable Long storeId) {
+        storeBookmarkService.unbookmarkStore(storeId);
+        return ResponseEntity.ok(CustomResponse.<Void>onSuccess(null, "OK"));
+    }
 }
