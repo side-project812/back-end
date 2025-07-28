@@ -43,4 +43,13 @@ public class StoreBookmarkService {
         }
         return (Long) authentication.getPrincipal();
     }
+
+    public void unbookmarkStore(Long storeId) {
+        Long userId = extractUserId();
+
+        StoreBookmark bookmark = storeBookmarkRepository.findByUserIdAndStoreId(userId, storeId)
+                .orElseThrow(() -> new CustomException(StoreErrorCode.STORE_BOOKMARK_NOT_FOUND));
+
+        storeBookmarkRepository.delete(bookmark);
+    }
 }
