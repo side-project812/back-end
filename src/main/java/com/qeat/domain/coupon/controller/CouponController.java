@@ -1,6 +1,7 @@
 package com.qeat.domain.coupon.controller;
 
 import com.qeat.domain.coupon.dto.request.CouponRegisterRequest;
+import com.qeat.domain.coupon.dto.response.CouponListResponse;
 import com.qeat.domain.coupon.dto.response.CouponRegisterResponse;
 import com.qeat.domain.coupon.service.CouponService;
 import com.qeat.global.apiPayload.CustomResponse;
@@ -9,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,5 +26,12 @@ public class CouponController {
     public ResponseEntity<CustomResponse<CouponRegisterResponse>> registerCoupon(@RequestBody CouponRegisterRequest request) {
         CouponRegisterResponse result = couponService.registerCoupon(request);
         return ResponseEntity.ok(CustomResponse.onSuccess(result, "쿠폰이 등록되었습니다."));
+    }
+
+    @GetMapping("/list")
+    @Operation(summary = "쿠폰 리스트 조회 API", description = "내 쿠폰 목록을 조회합니다.")
+    public ResponseEntity<CustomResponse<List<CouponListResponse>>> getCouponList() {
+        List<CouponListResponse> result = couponService.getCouponList();
+        return ResponseEntity.ok(CustomResponse.onSuccess(result, "내 쿠폰 목록 조회 성공"));
     }
 }
