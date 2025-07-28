@@ -3,6 +3,7 @@ package com.qeat.domain.order.controller;
 import com.qeat.domain.order.dto.request.CartAddRequest;
 import com.qeat.domain.order.dto.request.QrRequest;
 import com.qeat.domain.order.dto.response.CartAddResponse;
+import com.qeat.domain.order.dto.response.CartResponse;
 import com.qeat.domain.order.dto.response.QrResponse;
 import com.qeat.domain.order.service.CartService;
 import com.qeat.domain.order.service.QrService;
@@ -11,10 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,5 +34,12 @@ public class OrderController {
     public ResponseEntity<CustomResponse<CartAddResponse>> addToCart(@RequestBody CartAddRequest request) {
         cartService.addCartItems(request);
         return ResponseEntity.ok(CustomResponse.<CartAddResponse>onSuccess(null, "장바구니에 담겼습니다."));
+    }
+
+    @GetMapping("/cart")
+    @Operation(summary = "장바구니 조회 API", description = "storeId에 해당하는 장바구니를 조회합니다.")
+    public ResponseEntity<CustomResponse<CartResponse>> getCart(@RequestParam Long storeId) {
+        CartResponse response = cartService.getCartItems(storeId);
+        return ResponseEntity.ok(CustomResponse.onSuccess(response, "장바구니 조회 성공"));
     }
 }

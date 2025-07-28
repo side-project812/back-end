@@ -1,5 +1,6 @@
 package com.qeat.domain.order.entity;
 
+import com.qeat.domain.store.entity.Menu;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +19,9 @@ public class CartItem {
 
     private Long storeId;
 
-    private Long menuId;
-
     private int quantity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_id")
+    private Menu menu;
 }
