@@ -4,7 +4,9 @@ import com.qeat.domain.card.dto.request.CardRegisterRequest;
 import com.qeat.domain.card.dto.response.CardListResponse;
 import com.qeat.domain.card.dto.response.CardRegisterResponse;
 import com.qeat.domain.card.entity.Card;
+import com.qeat.domain.card.exception.code.CardErrorCode;
 import com.qeat.domain.card.repository.CardRepository;
+import com.qeat.global.apiPayload.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,5 +62,14 @@ public class CardService {
                         .isDefault(card.isDefault())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public void deleteCard(Long cardId) {
+        Long userId = extractUserIdFromSecurityContext();
+
+        Card card = cardRepository.findByIdAndUserId(cardId, userId)
+                .orElseThrow(() -> new CustomException(CardErrorCode.CARD_NOT_FOUND));
+
+        cardRepository.delete(card);
     }
 }

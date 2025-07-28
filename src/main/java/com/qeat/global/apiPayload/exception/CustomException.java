@@ -11,4 +11,8 @@ public class CustomException extends RuntimeException{
     public CustomException(BaseErrorCode errorCode) {
         this.code = errorCode;
     }
+
+    public BaseErrorCode getErrorCode() {
+        return this.code;
+    }
 }
