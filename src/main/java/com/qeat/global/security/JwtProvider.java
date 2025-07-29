@@ -1,12 +1,13 @@
 package com.qeat.global.security;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Base64;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
@@ -15,6 +16,8 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String secret;
 
+    private SecretKey secretKey;
+
     @Value("${jwt.expiration}")
     private long accessTokenExpiration;
 
@@ -22,8 +25,12 @@ public class JwtProvider {
     private long refreshTokenExpiration;
 
     @PostConstruct
-    protected void init() {
-        secret = Base64.getEncoder().encodeToString(secret.getBytes());
+    public void init() {
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException("JWT secret key must be at least 32 bytes for HS256.");
+        }
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes); // ✅ Base64 인코딩 없이 직접 키 생성
     }
 
     public String createToken(Long userId) {
@@ -34,34 +41,52 @@ public class JwtProvider {
                 .setSubject(userId.toString())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
-                .signWith(SignatureAlgorithm.HS256, secret)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String createRefreshToken(Long userId) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + refreshTokenExpiration); // 따로 설정해도 되고 고정값 가능
+        Date expiry = new Date(now.getTime() + refreshTokenExpiration);
+
         return Jwts.builder()
                 .setSubject(userId.toString())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
-                .signWith(SignatureAlgorithm.HS256, secret)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public Long extractUserId(String token) {
-        return Long.parseLong(Jwts.parser()
-                .setSigningKey(secret)
+        return Long.parseLong(parseClaims(token).getSubject());
+    }
+
+    public Claims parseClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject());
+                .getBody();
     }
 
     public long getAccessTokenExpiry() {
-        return accessTokenExpiration / 1000; // 초 단위
+        return accessTokenExpiration / 1000;
     }
 
     public long getRefreshTokenExpiry() {
-        return refreshTokenExpiration; // 밀리초 그대로 사용
+        return refreshTokenExpiration;
+    }
+
+    public JwtToken createTokens(Long userId) {
+        String accessToken = createToken(userId);
+        String refreshToken = createRefreshToken(userId);
+        long expiresIn = getAccessTokenExpiry();
+
+        return new JwtToken(accessToken, refreshToken, expiresIn);
+    }
+
+    public long extractExpiration(String token) {
+        Date expiration = parseClaims(token).getExpiration();
+        return expiration.getTime() - System.currentTimeMillis();
     }
 }

@@ -5,6 +5,7 @@ import com.qeat.domain.user.dto.response.OAuthResponse;
 import com.qeat.domain.user.entity.User;
 import com.qeat.domain.user.repository.OAuthRepository;
 import com.qeat.global.security.JwtProvider;
+import com.qeat.global.security.JwtToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ public class OAuthService {
     private final Map<String, OAuthUserInfoProvider> oAuthUserInfoProviders;
 
     public OAuthResponse loginOrSignup(OAuthRequest request) {
-        String provider = request.provider().toLowerCase(); // "google", "apple"
+        String provider = request.provider().toLowerCase(); // "google"
         OAuthUserInfoProvider userInfoProvider = oAuthUserInfoProviders.get(provider);
 
         if (userInfoProvider == null) {
@@ -30,22 +31,36 @@ public class OAuthService {
 
         return oAuthRepository.findByProviderAndProviderId(provider.toUpperCase(), userInfo.getProviderId())
                 .map(user -> {
-                    String jwt = jwtProvider.createToken(user.getId());
-                    return new OAuthResponse(true, false, OAuthResponse.UserResponse.from(user), jwt);
+                    JwtToken token = jwtProvider.createTokens(user.getId());
+                    return new OAuthResponse(
+                            true,
+                            false,
+                            OAuthResponse.UserResponse.from(user),
+                            token.accessToken(),
+                            token.refreshToken(),
+                            token.expiresIn()
+                    );
                 })
                 .orElseGet(() -> {
                     User newUser = User.builder()
                             .name(userInfo.getName())
                             .email(userInfo.getEmail())
-                            .password("OAUTH_USER") // 소셜 로그인 유저는 비밀번호 없음
+                            .password("OAUTH_USER")
                             .provider(provider.toUpperCase())
                             .providerId(userInfo.getProviderId())
                             .avatar(userInfo.getAvatar())
                             .build();
 
                     oAuthRepository.save(newUser);
-                    String jwt = jwtProvider.createToken(newUser.getId());
-                    return new OAuthResponse(true, true, OAuthResponse.UserResponse.from(newUser), jwt);
+                    JwtToken token = jwtProvider.createTokens(newUser.getId());
+                    return new OAuthResponse(
+                            true,
+                            true,
+                            OAuthResponse.UserResponse.from(newUser),
+                            token.accessToken(),
+                            token.refreshToken(),
+                            token.expiresIn()
+                    );
                 });
     }
 }

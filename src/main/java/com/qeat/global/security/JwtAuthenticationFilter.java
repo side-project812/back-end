@@ -26,6 +26,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String uri = request.getRequestURI();
+
+        // JWT 인증이 필요 없는 경로
+        if (uri.equals("/v3/api-docs")
+                || uri.startsWith("/v3/api-docs/")
+                || uri.startsWith("/swagger-ui")
+                || uri.equals("/swagger-ui.html")
+                || uri.equals("/api/auth/signup")
+                || uri.equals("/api/auth/oauth")
+                || uri.equals("/api/auth/login")
+                || uri.equals("/api/auth/refresh")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = resolveToken(request);
         if (token != null) {
             try {
@@ -36,7 +51,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
 
                 Long userId = jwtProvider.extractUserId(token);
-
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userId, null, null);
                 SecurityContextHolder.getContext().setAuthentication(authentication);

@@ -16,6 +16,7 @@ public class LoginService {
     private final LoginRepository loginRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final RefreshTokenStore refreshTokenStore;
 
     public LoginResponse login(LoginRequest request) {
         User user = loginRepository.findByEmail(request.email())
@@ -31,7 +32,9 @@ public class LoginService {
 
         String accessToken = jwtProvider.createToken(user.getId());
         String refreshToken = jwtProvider.createRefreshToken(user.getId());
-        long expiresIn = jwtProvider.getAccessTokenExpiry(); // 초 단위
+        long expiresIn = jwtProvider.getAccessTokenExpiry();
+
+        refreshTokenStore.save(user.getId(), refreshToken, jwtProvider.getRefreshTokenExpiry());
 
         return new LoginResponse(accessToken, refreshToken, expiresIn);
     }
