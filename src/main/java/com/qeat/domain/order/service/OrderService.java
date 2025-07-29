@@ -6,10 +6,13 @@ import com.qeat.domain.order.dto.request.OrderConfirmRequest;
 import com.qeat.domain.order.dto.request.OrderRequest;
 import com.qeat.domain.order.dto.response.OrderConfirmResponse;
 import com.qeat.domain.order.dto.response.OrderResponse;
+import com.qeat.domain.order.dto.response.OrderStatusResponse;
 import com.qeat.domain.order.entity.CartItem;
 import com.qeat.domain.order.entity.Order;
+import com.qeat.domain.order.entity.OrderItem;
 import com.qeat.domain.order.exception.code.OrderErrorCode;
 import com.qeat.domain.order.repository.CartItemRepository;
+import com.qeat.domain.order.repository.OrderItemRepository;
 import com.qeat.domain.order.repository.OrderRepository;
 import com.qeat.global.apiPayload.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ public class OrderService {
     private final CartItemRepository cartItemRepository;
     private final OrderRepository orderRepository;
     private final UserCouponRepository userCouponRepository;
+    private final OrderItemRepository orderItemRepository;
 
     public OrderResponse createOrder(OrderRequest request) {
         Long userId = extractUserId();
@@ -118,6 +122,34 @@ public class OrderService {
 
         return OrderConfirmResponse.builder()
                 .orderId(order.getId())
+                .finalAmount(order.getFinalAmount())
+                .build();
+    }
+
+    public OrderStatusResponse getOrderStatus(Long orderId) {
+        Long userId = extractUserId();
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+
+        if (!order.getUserId().equals(userId)) {
+            throw new CustomException(OrderErrorCode.UNAUTHORIZED);
+        }
+
+        // 주문 메뉴 목록 조회
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+
+        List<OrderStatusResponse.OrderMenuItem> items = orderItems.stream()
+                .map(item -> new OrderStatusResponse.OrderMenuItem(
+                        item.getMenu().getId(),
+                        item.getMenu().getName(),
+                        item.getQuantity()
+                )).toList();
+
+        return OrderStatusResponse.builder()
+                .orderId(order.getId())
+                .status(order.getStatus().name()) // "주문확인", "조리중", "조리완료"
+                .items(items)
                 .finalAmount(order.getFinalAmount())
                 .build();
     }
