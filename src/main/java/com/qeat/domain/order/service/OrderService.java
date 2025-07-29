@@ -2,7 +2,9 @@ package com.qeat.domain.order.service;
 
 import com.qeat.domain.coupon.entity.UserCoupon;
 import com.qeat.domain.coupon.repository.UserCouponRepository;
+import com.qeat.domain.order.dto.request.OrderConfirmRequest;
 import com.qeat.domain.order.dto.request.OrderRequest;
+import com.qeat.domain.order.dto.response.OrderConfirmResponse;
 import com.qeat.domain.order.dto.response.OrderResponse;
 import com.qeat.domain.order.entity.CartItem;
 import com.qeat.domain.order.entity.Order;
@@ -87,5 +89,36 @@ public class OrderService {
             throw new CustomException(OrderErrorCode.UNAUTHORIZED);
         }
         return (Long) auth.getPrincipal();
+    }
+
+    public OrderConfirmResponse confirmOrder(OrderConfirmRequest request) {
+        Long userId = extractUserId();
+
+        Order order = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+
+        if (!order.getUserId().equals(userId)) {
+            throw new CustomException(OrderErrorCode.UNAUTHORIZED);
+        }
+
+        if (order.getFinalAmount() != request.getAmount()) {
+            throw new CustomException(OrderErrorCode.PAYMENT_AMOUNT_MISMATCH);
+        }
+
+        // TODO: Toss 결제 실제 연동이 필요할 경우 여기서 검증 요청
+
+        // 쿠폰 사용 처리
+        if (order.getUserCouponId() != null) {
+            userCouponRepository.findById(order.getUserCouponId())
+                    .ifPresent(userCoupon -> {
+                        userCoupon.setIsUsed(true);
+                        userCouponRepository.save(userCoupon);
+                    });
+        }
+
+        return OrderConfirmResponse.builder()
+                .orderId(order.getId())
+                .finalAmount(order.getFinalAmount())
+                .build();
     }
 }

@@ -17,7 +17,8 @@ public class Order {
 
     private Long storeId;
 
-    private Long userCouponId; // null 가능
+    @Column(name = "user_coupon_id", nullable = true)
+    private Long userCouponId;
 
     private int originalAmount;
 

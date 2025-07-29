@@ -11,7 +11,9 @@ public enum OrderErrorCode implements BaseErrorCode {
 
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_001", "해당 가게를 찾을 수 없습니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "ORDER_002", "로그인이 필요합니다."),
-    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_003", "해당 쿠폰을 찾을 수 없습니다.");
+    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_003", "해당 쿠폰을 찾을 수 없습니다."),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_004", "주문을 찾을 수 없습니다."),
+    PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "ORDER_005", "결제 금액이 일치하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;
