@@ -1,12 +1,10 @@
 package com.qeat.domain.order.controller;
 
 import com.qeat.domain.order.dto.request.CartAddRequest;
+import com.qeat.domain.order.dto.request.OrderConfirmRequest;
 import com.qeat.domain.order.dto.request.OrderRequest;
 import com.qeat.domain.order.dto.request.QrRequest;
-import com.qeat.domain.order.dto.response.CartAddResponse;
-import com.qeat.domain.order.dto.response.CartResponse;
-import com.qeat.domain.order.dto.response.OrderResponse;
-import com.qeat.domain.order.dto.response.QrResponse;
+import com.qeat.domain.order.dto.response.*;
 import com.qeat.domain.order.service.CartService;
 import com.qeat.domain.order.service.OrderService;
 import com.qeat.domain.order.service.QrService;
@@ -52,5 +50,14 @@ public class OrderController {
     public ResponseEntity<CustomResponse<OrderResponse>> requestOrder(@RequestBody OrderRequest request) {
         OrderResponse response = orderService.createOrder(request);
         return ResponseEntity.ok(CustomResponse.onSuccess(response, "결제 준비 완료"));
+    }
+
+    @PostMapping("/confirm")
+    @Operation(summary = "주문 확정 API", description = "결제 후 주문을 확정합니다.")
+    public ResponseEntity<CustomResponse<OrderConfirmResponse>> confirmOrder(
+            @RequestBody OrderConfirmRequest request
+    ) {
+        OrderConfirmResponse response = orderService.confirmOrder(request);
+        return ResponseEntity.ok(CustomResponse.onSuccess(response, "주문이 완료되었습니다."));
     }
 }

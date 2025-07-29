@@ -21,4 +21,8 @@ public class UserCoupon {
     private Coupon coupon;
 
     private Boolean isUsed;
+
+    public void setIsUsed(boolean used) {
+        this.isUsed = used;
+    }
 }
