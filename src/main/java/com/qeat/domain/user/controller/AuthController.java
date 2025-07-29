@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -35,7 +36,7 @@ public class AuthController {
     }
 
     @PostMapping("/oauth")
-    @Operation(summary = "구글/애플 회원가입 및 로그인 API", description = "소셜 회원가입 및 로그인 요청 처리")
+    @Operation(summary = "구글 회원가입 및 로그인 API", description = "구글 로그인 및 회원가입 처리")
     public ResponseEntity<CustomResponse<OAuthResponse>> oauth(@RequestBody OAuthRequest request) {
         OAuthResponse response = oAuthService.loginOrSignup(request);
         return ResponseEntity.ok(CustomResponse.onSuccess(response));
@@ -50,10 +51,18 @@ public class AuthController {
 
     @PostMapping("/logout")
     @Operation(summary = "로그아웃 API", description = "로그아웃 요청 처리")
-    public ResponseEntity<CustomResponse<Void>> logout(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        logoutService.logout(token);
+    public ResponseEntity<CustomResponse<Void>> logout(HttpServletRequest request) {
+        String token = resolveToken(request); // 헤더에서 토큰 추출
+        logoutService.logout(token);          // 블랙리스트 처리
         return ResponseEntity.ok(CustomResponse.<Void>onSuccess(null, "로그아웃 되었습니다."));
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+            return bearer.substring(7);
+        }
+        return null;
     }
 
     @PostMapping("/refresh")

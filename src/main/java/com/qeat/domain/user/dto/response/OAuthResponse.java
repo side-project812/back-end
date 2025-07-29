@@ -6,7 +6,9 @@ public record OAuthResponse(
         boolean isSuccess,
         boolean isNewUser,
         UserResponse user,
-        String token
+        String accessToken,
+        String refreshToken,
+        long expiresIn
 ) {
     public record UserResponse(
             Long id,
