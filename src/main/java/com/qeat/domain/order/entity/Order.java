@@ -25,4 +25,7 @@ public class Order {
     private int discountAmount;
 
     private int finalAmount;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 }

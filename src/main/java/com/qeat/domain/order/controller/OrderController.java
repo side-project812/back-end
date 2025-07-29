@@ -60,4 +60,11 @@ public class OrderController {
         OrderConfirmResponse response = orderService.confirmOrder(request);
         return ResponseEntity.ok(CustomResponse.onSuccess(response, "주문이 완료되었습니다."));
     }
+
+    @GetMapping("/status/{orderId}")
+    @Operation(summary = "주문 상태 조회 API", description = "주문 상태 및 메뉴 항목을 조회합니다.")
+    public ResponseEntity<CustomResponse<OrderStatusResponse>> getOrderStatus(@PathVariable Long orderId) {
+        OrderStatusResponse response = orderService.getOrderStatus(orderId);
+        return ResponseEntity.ok(CustomResponse.onSuccess(response, "주문 상태 조회 성공"));
+    }
 }
