@@ -1,11 +1,14 @@
 package com.qeat.domain.order.controller;
 
 import com.qeat.domain.order.dto.request.CartAddRequest;
+import com.qeat.domain.order.dto.request.OrderRequest;
 import com.qeat.domain.order.dto.request.QrRequest;
 import com.qeat.domain.order.dto.response.CartAddResponse;
 import com.qeat.domain.order.dto.response.CartResponse;
+import com.qeat.domain.order.dto.response.OrderResponse;
 import com.qeat.domain.order.dto.response.QrResponse;
 import com.qeat.domain.order.service.CartService;
+import com.qeat.domain.order.service.OrderService;
 import com.qeat.domain.order.service.QrService;
 import com.qeat.global.apiPayload.CustomResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
     private final QrService qrService;
     private final CartService cartService;
+    private final OrderService orderService;
 
     @PostMapping("/qr")
     @Operation(summary = "QR 코드 생성 API", description = "storeId를 기반으로 주문용 QR 코드 생성")
@@ -41,5 +45,12 @@ public class OrderController {
     public ResponseEntity<CustomResponse<CartResponse>> getCart(@RequestParam Long storeId) {
         CartResponse response = cartService.getCartItems(storeId);
         return ResponseEntity.ok(CustomResponse.onSuccess(response, "장바구니 조회 성공"));
+    }
+
+    @PostMapping("/request")
+    @Operation(summary = "주문 요청 API", description = "주문을 생성하고 결제 준비 정보를 반환합니다.")
+    public ResponseEntity<CustomResponse<OrderResponse>> requestOrder(@RequestBody OrderRequest request) {
+        OrderResponse response = orderService.createOrder(request);
+        return ResponseEntity.ok(CustomResponse.onSuccess(response, "결제 준비 완료"));
     }
 }
