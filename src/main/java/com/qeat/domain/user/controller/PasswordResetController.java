@@ -31,20 +31,20 @@ public class PasswordResetController {
 
     @PostMapping("/request")
     @Operation(summary = "비밀번호 재설정 코드 전송 요청 API", description = "비밀번호 재설정 코드 전송 요청 처리")
-    public PasswordResetResponse sendResetCode(@RequestBody PasswordResetRequest request) {
-        String email = request.email();
+    public ResponseEntity<CustomResponse<PasswordResetResponse>> sendResetCode(
+            @RequestBody PasswordResetRequest request) {
 
+        String email = request.email();
         String code = emailService.sendPasswordResetCode(email);
         redisEmailCodeService.saveCode(email, code, EXPIRE_SECONDS);
 
-        return PasswordResetResponse.builder()
-                .isSuccess(true)
-                .code("200")
-                .message("인증 코드가 전송되었습니다.")
-                .result(PasswordResetResponse.Result.builder()
-                        .expiresIn(EXPIRE_SECONDS)
-                        .build())
+        PasswordResetResponse result = PasswordResetResponse.builder()
+                .expiresIn(EXPIRE_SECONDS)
                 .build();
+
+        return ResponseEntity.ok(
+                CustomResponse.onSuccess(result, "인증 코드가 전송되었습니다.")
+        );
     }
 
     @PostMapping("/verify")
