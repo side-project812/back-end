@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.util.Random;
 
@@ -14,10 +16,16 @@ import java.util.Random;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final TemplateEngine templateEngine;
 
     // 비밀번호 재설정 인증번호 전송
     public String sendPasswordResetCode(String toEmail) {
-        String code = generateCode(); // 6자리 숫자 인증코드 생성
+        String code = generateCode(); // 4자리
+
+        // 템플릿에 값 삽입
+        Context context = new Context();
+        context.setVariable("code", code);
+        String htmlContent = templateEngine.process("email/password-reset", context);
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -25,15 +33,7 @@ public class EmailService {
 
             helper.setTo(toEmail);
             helper.setSubject("[Qeat] 비밀번호 재설정 인증번호");
-            helper.setText(
-                    "<div style='font-family:Arial,sans-serif;'>" +
-                            "<h2>Qeat 비밀번호 재설정</h2>" +
-                            "<p>아래 인증번호를 입력해주세요:</p>" +
-                            "<h3 style='color:blue'>" + code + "</h3>" +
-                            "<p>인증번호는 4분간 유효합니다.</p>" +
-                            "</div>",
-                    true
-            );
+            helper.setText(htmlContent, true); // HTML 내용 적용
 
             mailSender.send(message);
         } catch (MessagingException e) {
@@ -43,6 +43,7 @@ public class EmailService {
         return code;
     }
 
+    // 결제 비밀번호 재설정 인증번호 전송
     public String sendPaymentPasswordResetCode(String toEmail) {
         String code = generateCode(); // 4자리
 
