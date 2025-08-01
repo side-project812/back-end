@@ -1,5 +1,8 @@
 package com.qeat.global.config;
 
+import com.qeat.domain.user.service.TokenBlacklistService;
+import com.qeat.global.security.JwtAuthenticationFilter;
+import com.qeat.global.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -7,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Slf4j
 @Configuration
@@ -14,10 +18,13 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtProvider jwtProvider;
+    private final TokenBlacklistService tokenBlacklistService;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (Swagger 테스트용)
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/v3/api-docs/**",
@@ -28,10 +35,12 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/refresh"
                         ).permitAll()
-                        .anyRequest().permitAll() // 다른 모든 요청도 허용
+                        .anyRequest().authenticated() // 🔐 보호된 경로는 인증 필요
                 )
-                .formLogin(form -> form.disable()) // 기본 로그인 폼 비활성화
-                .httpBasic(basic -> basic.disable()) // HTTP Basic 인증 비활성화
+                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, tokenBlacklistService),
+                        UsernamePasswordAuthenticationFilter.class)
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
                 .build();
     }
 }

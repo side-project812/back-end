@@ -8,10 +8,12 @@ import com.qeat.domain.user.service.PaymentPasswordResetService;
 import com.qeat.global.apiPayload.CustomResponse;
 import com.qeat.global.mail.EmailService;
 import com.qeat.global.mail.RedisEmailCodeService;
+import com.qeat.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,8 +32,7 @@ public class PaymentPasswordResetController {
     @PostMapping("/request")
     @Operation(summary = "결제 비밀번호 재설정 코드 전송 요청 API", description = "결제 비밀번호 재설정 코드 전송 요청 처리")
     public ResponseEntity<CustomResponse<CodeSendResponse>> sendPaymentPasswordResetCode(
-            @RequestBody PaymentPasswordResetRequest request,
-            @RequestHeader("Authorization") String authHeader) {
+            @RequestBody PaymentPasswordResetRequest request) {
 
         String code = emailService.sendPaymentPasswordResetCode(request.email());
         redisEmailCodeService.savePaymentCode(request.email(), code, EXPIRE_SECONDS);
@@ -47,8 +48,7 @@ public class PaymentPasswordResetController {
     @PostMapping("/verify")
     @Operation(summary = "결제 비밀번호 코드 인증 API", description = "결제 비밀번호 코드 인증 요청 처리")
     public ResponseEntity<CustomResponse<Void>> verifyPaymentPasswordCode(
-            @RequestBody PaymentPasswordVerifyRequest request,
-            @RequestHeader("Authorization") String authHeader) {
+            @RequestBody PaymentPasswordVerifyRequest request) {
 
         String storedCode = redisEmailCodeService.getPaymentCode(request.email());
 
@@ -73,10 +73,10 @@ public class PaymentPasswordResetController {
     @PostMapping("/change")
     @Operation(summary = "결제 비밀번호 재설정 API", description = "결제 비밀번호 재설정 요청 처리")
     public ResponseEntity<CustomResponse<Void>> changePaymentPassword(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody PaymentPasswordChangeRequest request) {
 
-        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
+        Long userId = userDetails.getUserId();
         paymentPasswordResetService.changePaymentPassword(userId, request.paymentPassword());
 
         return ResponseEntity.ok(
