@@ -45,18 +45,21 @@ public class EmailService {
 
     // 결제 비밀번호 재설정 인증번호 전송
     public String sendPaymentPasswordResetCode(String toEmail) {
-        String code = generateCode(); // 4자리
+        String code = generateCode(); // 예: 4자리
 
         try {
+            Context context = new Context();
+            context.setVariable("code", code);
+
+            String htmlContent = templateEngine.process("email/payment-reset", context);
+
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(toEmail);
             helper.setSubject("[Qeat] 결제 비밀번호 재설정 인증번호");
-            helper.setText(
-                    "<h3>Qeat 결제 비밀번호 재설정</h3><p>인증번호: <strong>" + code + "</strong></p><p>유효시간: 4분</p>",
-                    true
-            );
+            helper.setText(htmlContent, true);
+
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException("이메일 전송에 실패했습니다.", e);

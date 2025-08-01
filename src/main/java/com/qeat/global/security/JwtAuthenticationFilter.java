@@ -50,9 +50,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                Long userId = jwtProvider.extractUserId(token);
+                Long userId = Long.valueOf(jwtProvider.extractUserId(token));
+                CustomUserDetails userDetails = new CustomUserDetails(userId);
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userId, null, null);
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception e) {
                 log.warn("유효하지 않은 토큰입니다: {}", e.getMessage());
