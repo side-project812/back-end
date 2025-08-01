@@ -14,6 +14,10 @@ public class UserProfileService {
     private final LoginRepository loginRepository;
 
     public void changeName(Long userId, String newName) {
+        if (loginRepository.existsByName(newName)) {
+            throw new UserException(UserErrorCode.DUPLICATE_NAME);
+        }
+
         User user = loginRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 

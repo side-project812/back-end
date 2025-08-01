@@ -3,6 +3,7 @@ package com.qeat.domain.user.controller;
 import com.qeat.domain.user.dto.request.ChangeNameRequest;
 import com.qeat.domain.user.service.UserProfileService;
 import com.qeat.global.apiPayload.CustomResponse;
+import com.qeat.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,9 @@ public class UserProfileController {
     public ResponseEntity<CustomResponse<Void>> changeName(
             @RequestBody ChangeNameRequest request
     ) {
-        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = userDetails.getUserId();
+
         userProfileService.changeName(userId, request.name());
 
         return ResponseEntity.ok(
@@ -37,15 +40,13 @@ public class UserProfileController {
     }
 
     @PatchMapping("/email")
-    @Operation(
-            summary = "이메일 주소 변경 API",
-            description = "사용자의 이메일 주소를 변경합니다.",
-            security = @SecurityRequirement(name = "JWT")
-    )
+    @Operation(summary = "이메일 주소 변경 API", description = "사용자의 이메일 주소를 변경합니다.")
     public ResponseEntity<CustomResponse<Void>> changeEmail(
             @RequestBody ChangeEmailRequest request
     ) {
-        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = userDetails.getUserId();
+
         userProfileService.changeEmail(userId, request.newEmail());
 
         return ResponseEntity.ok(
