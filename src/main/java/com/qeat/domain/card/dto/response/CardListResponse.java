@@ -1,7 +1,9 @@
 package com.qeat.domain.card.dto.response;
 
 import lombok.Builder;
+import lombok.Getter;
 
+@Getter
 @Builder
 public class CardListResponse {
     private Long cardId;

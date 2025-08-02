@@ -7,6 +7,7 @@ import com.qeat.domain.card.entity.Card;
 import com.qeat.domain.card.exception.code.CardErrorCode;
 import com.qeat.domain.card.repository.CardRepository;
 import com.qeat.global.apiPayload.exception.CustomException;
+import com.qeat.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,7 +49,9 @@ public class CardService {
         if (authentication == null || authentication.getPrincipal() == null) {
             throw new IllegalStateException("사용자 인증 정보가 존재하지 않습니다.");
         }
-        return (Long) authentication.getPrincipal();
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        return userDetails.getUserId(); // userId 추출
     }
 
     public List<CardListResponse> getCardList() {
