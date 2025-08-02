@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "menus")
 public class Menu {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
