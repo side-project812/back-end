@@ -24,7 +24,6 @@ public class CardController {
     @PostMapping("/register")
     @Operation(summary = "카드 등록 API", description = "카드 등록 요청 처리")
     public ResponseEntity<CustomResponse<CardRegisterResponse>> registerCard(
-            @RequestHeader("Authorization") String accessToken,
             @RequestBody CardRegisterRequest request
     ) {
         CardRegisterResponse result = cardService.registerCard(request);
