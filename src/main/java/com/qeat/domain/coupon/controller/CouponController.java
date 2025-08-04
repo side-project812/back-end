@@ -5,10 +5,12 @@ import com.qeat.domain.coupon.dto.response.CouponListResponse;
 import com.qeat.domain.coupon.dto.response.CouponRegisterResponse;
 import com.qeat.domain.coupon.service.CouponService;
 import com.qeat.global.apiPayload.CustomResponse;
+import com.qeat.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,8 +25,13 @@ public class CouponController {
 
     @PostMapping("/register")
     @Operation(summary = "쿠폰 등록 API", description = "쿠폰 코드를 입력 받아 쿠폰 등록")
-    public ResponseEntity<CustomResponse<CouponRegisterResponse>> registerCoupon(@RequestBody CouponRegisterRequest request) {
-        CouponRegisterResponse result = couponService.registerCoupon(request);
+    public ResponseEntity<CustomResponse<CouponRegisterResponse>> registerCoupon(
+            @RequestBody CouponRegisterRequest request
+    ) {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = userDetails.getUserId();
+
+        CouponRegisterResponse result = couponService.registerCoupon(userId, request);
         return ResponseEntity.ok(CustomResponse.onSuccess(result, "쿠폰이 등록되었습니다."));
     }
 
