@@ -25,4 +25,12 @@ public class UserCoupon {
     public void setIsUsed(boolean used) {
         this.isUsed = used;
     }
+
+    public void use() {
+        this.isUsed = true;
+    }
+
+    public boolean isUsed() {
+        return Boolean.TRUE.equals(this.isUsed);
+    }
 }

@@ -2,12 +2,15 @@ package com.qeat.domain.order.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "orders")
 public class Order {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,5 +30,10 @@ public class Order {
     private int finalAmount;
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus status;
+    @Column(nullable = false)
+    @Builder.Default // @Builder 사용 시 꼭 필요함
+    private OrderStatus status = OrderStatus.주문확인;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items = new ArrayList<>();
 }
