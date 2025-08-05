@@ -21,6 +21,10 @@ public class CartItem {
 
     private int quantity;
 
+    public void addQuantity(int more) {
+        this.quantity += more;
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id")
     private Menu menu;

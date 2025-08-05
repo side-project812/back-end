@@ -15,6 +15,7 @@ import com.qeat.domain.order.repository.CartItemRepository;
 import com.qeat.domain.order.repository.OrderItemRepository;
 import com.qeat.domain.order.repository.OrderRepository;
 import com.qeat.global.apiPayload.exception.CustomException;
+import com.qeat.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,7 +33,9 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
 
     public OrderResponse createOrder(OrderRequest request) {
-        Long userId = extractUserId();
+        CustomUserDetails userDetails =
+                (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = userDetails.getUserId();
 
         List<CartItem> cartItems = cartItemRepository.findByUserId(userId).stream()
                 .filter(item -> item.getStoreId().equals(request.getStoreId()))
@@ -61,6 +64,7 @@ public class OrderService {
 
         int finalAmount = originalAmount - discountAmount;
 
+        // ✅ 주문 저장
         Order order = orderRepository.save(Order.builder()
                 .userId(userId)
                 .storeId(request.getStoreId())
@@ -71,6 +75,19 @@ public class OrderService {
                 .build()
         );
 
+        // ✅ 주문 항목 저장
+        List<OrderItem> orderItems = cartItems.stream()
+                .map(cartItem -> OrderItem.builder()
+                        .order(order)
+                        .menu(cartItem.getMenu())
+                        .quantity(cartItem.getQuantity())
+                        .price(cartItem.getMenu().getPrice())
+                        .build())
+                .toList();
+
+        orderItemRepository.saveAll(orderItems);
+
+        // ✅ 결제 요청 응답 구성
         OrderResponse.TossPaymentRequest toss = new OrderResponse.TossPaymentRequest(
                 "order_" + order.getId(),
                 finalAmount,
@@ -88,11 +105,13 @@ public class OrderService {
     }
 
     private Long extractUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getPrincipal() == null) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
             throw new CustomException(OrderErrorCode.UNAUTHORIZED);
         }
-        return (Long) auth.getPrincipal();
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        return userDetails.getUserId();
     }
 
     public OrderConfirmResponse confirmOrder(OrderConfirmRequest request) {
