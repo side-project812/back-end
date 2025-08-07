@@ -12,10 +12,12 @@ import com.qeat.global.apiPayload.CustomResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "회원가입/로그인/로그아웃")
@@ -45,6 +47,7 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "이메일 로그인 API", description = "이메일 로그인 요청 처리")
     public ResponseEntity<CustomResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
+        log.info("로그인 요청 도착: {}", request.email());
         LoginResponse response = loginService.login(request);
         return ResponseEntity.ok(CustomResponse.onSuccess(response));
     }

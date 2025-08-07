@@ -41,34 +41,65 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+//        String token = resolveToken(request);
+//        if (token != null) {
+//            try {
+//                if (tokenBlacklistService.isBlacklisted(token)) {
+//                    log.warn("블랙리스트에 등록된 토큰입니다.");
+//                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "블랙리스트 토큰");
+//                    return;
+//                }
+//
+//                Long userId = Long.valueOf(jwtProvider.extractUserId(token));
+//                CustomUserDetails userDetails = new CustomUserDetails(userId);
+//                UsernamePasswordAuthenticationToken authentication =
+//                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+//                SecurityContextHolder.getContext().setAuthentication(authentication);
+//            } catch (Exception e) {
+//                log.warn("유효하지 않은 토큰입니다: {}", e.getMessage());
+//                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰");
+//                return;
+//            }
+//        }
         String token = resolveToken(request);
-        if (token != null) {
-            try {
-                if (tokenBlacklistService.isBlacklisted(token)) {
-                    log.warn("블랙리스트에 등록된 토큰입니다.");
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "블랙리스트 토큰");
-                    return;
-                }
+        if (token == null || token.isBlank()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-                Long userId = Long.valueOf(jwtProvider.extractUserId(token));
-                CustomUserDetails userDetails = new CustomUserDetails(userId);
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (Exception e) {
-                log.warn("유효하지 않은 토큰입니다: {}", e.getMessage());
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰");
+        try {
+            if (tokenBlacklistService.isBlacklisted(token)) {
+                log.warn("블랙리스트에 등록된 토큰입니다.");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "블랙리스트 토큰");
                 return;
             }
+
+            Long userId = Long.valueOf(jwtProvider.extractUserId(token));
+            CustomUserDetails userDetails = new CustomUserDetails(userId);
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (Exception e) {
+            log.warn("유효하지 않은 토큰입니다: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰");
+            return;
         }
 
         filterChain.doFilter(request, response);
     }
 
+//    private String resolveToken(HttpServletRequest request) {
+//        String bearer = request.getHeader("Authorization");
+//        if (bearer != null && bearer.startsWith("Bearer ")) {
+//            return bearer.substring(7);
+//        }
+//        return null;
+//    }
     private String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
         if (bearer != null && bearer.startsWith("Bearer ")) {
-            return bearer.substring(7);
+            String token = bearer.substring(7);
+            return token.isBlank() ? null : token;  // 빈 문자열이면 null 반환
         }
         return null;
     }
