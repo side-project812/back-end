@@ -9,9 +9,10 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                //.allowedOrigins() //TODO: 추후에 배포 시에 주석 해제
+                .allowedOrigins("https://q-eat.store") // 또는 http://localhost:3000 등 프론트 도메인
                 .allowedMethods("*")
                 .allowedHeaders("*")
+                .allowCredentials(true) // JWT 쿠키 전송 시 필요
                 .maxAge(3600);
     }
 }
